@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/profile.css' %}">
+
+<div id = 'profile'>
+    <section id = 'section1'>
+
+        <div id = 'top'>
+            <h4>{{profile_list.nickname}}</h4>
+            <img src="#" alt="profile image">
+        </div>
+
+        <div id = 'data'>
+            <ul id = 'count'>
+                <li>
+                    <label for = 'name'>投稿数</label>
+                    <p>17</p>
+                </li>
+                <li>
+                    <label for = 'name'>質問数</label>
+                    <p>17</p>
+                </li>
+                <li>
+                    <label for = 'name'>フォロワー</label>
+                    <p>17</p>
+                </li>
+            </ul>
+            <div id = 'update'>
+                <h6>プロフィールを編集</h6>
+            </div>
+        </div>
+
+    </section>
+
+    <section id = 'section2'>
+
+        <div id = 'list'>
+            <div id = 'title'>
+                <h6 id = 'title_post'><a href="#">投稿一覧</a></h6>
+                <h6 id = 'title_question'><a href="#">質問一覧</a></h6>
+                <form class="form-inline my-2" method="GET" action="#" id = 'search_box'>
+                    <input type = 'search' name = 'search' placeholder = 'キーワードを入力'>
+                    <input type="submit" name = 'submit' value = '検索'>
+                </form>
+            </div>
+
+            <div id = 'list'>
+                <div id = 'trend'>
+                    {% for item in article_list%}
+                    
+                    {% endfor %}
+                </div>
+                <div id = 'list_question'>
+
+                </div>
+            </div>
+        </div>
+
+    </section>
+</div>
+{% endblock content %}
