@@ -4,8 +4,8 @@ from django.views import generic
 from django.contrib.auth import login, authenticate, get_user_model, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import (LoginView, LogoutView)
-from .forms import LoginForm, UserCreateForm
-from .models import User
+from .forms import LoginForm, UserCreateForm, CreateProfile
+from .models import User, ProfileModel, ReviewModel
 from bs4 import BeautifulSoup as bs4
 import requests
 # Create your views here.
@@ -57,21 +57,9 @@ def create_profile(request):
     return render(request,'create_profile.html',{'form' : form})
 
 def home(request):
-    return render(request,'home.html')
-
-def create_question(request):
-    if request.method == 'POST':
-        form = CreateQuestion(request.POST)
-        nickname = ProfileModel.objects.filter(username = request.user)
-        if form.is_valid():
-            object = form.save()
-            object.username = request.user
-            object.nickname = nickname
-            object.save()
-            return redirect('home')
-    else:
-        form = CreateQuestion
-    return render(request,'create_question.html',{'form' : form})
+    review_list = ReviewModel.objects.all()
+    print(review_list)
+    return render(request,'home.html',{'review_list' : review_list})
 
 def profile(request,pk):
     profile_list = ProfileModel.objects.get(pk = pk)

@@ -20,6 +20,11 @@ class UserCreateForm(UserCreationForm):
         model = models.User
         fields = ('username',)
 
+class CreateProfile(forms.ModelForm):
+    class Meta:
+        model = models.ProfileModel
+        fields = ('nickname','gender','favarite_anime')
+
 
 
 

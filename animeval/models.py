@@ -119,17 +119,14 @@ class ProfileModel(models.Model):
     gender = models.IntegerField(choices = GENDER_CHOICES, blank = True)
     favarite_anime = models.CharField(max_length = 100)
 
-
-class ArticleModel(models.Model):
+class ReviewModel(models.Model):
     username = models.ForeignKey(User, on_delete = models.CASCADE)
     nickname = models.ForeignKey(ProfileModel, on_delete = models.CASCADE)
-    article_title = models.CharField(max_length = 100)
-    author = models.CharField(max_length = 100)
-    journal = models.CharField(max_length = 50)
-    pm_id = models.CharField(max_length = 20)
+    anime_title = models.CharField(max_length = 100)
+    review_title = models.CharField(max_length =50)
+    review_content = models.TextField()
     evaluation_value = models.CharField(max_length = 9)
-    content_title = models.CharField(max_length =50)
-    content = models.TextField()
+    evaluation_value_ave = models.PositiveIntegerField()
     post_date = models.DateTimeField(auto_now_add = True)
 
 
