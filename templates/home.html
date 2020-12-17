@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static '/css/home.css' %}">
+<div id = 'wrapper'>
+    <section id = 'trend'>
+    </section>
+    {% for review in review_list %}
+    <section id = 'review-list'>
+        <div id = 'title'>
+            <div id = 'review-title'>
+                <h4>{{review.evaluation_value_ave}}</h4>
+                <h4>{{review.review_title}}</h4>
+            </div>
+            <div id = 'anime-title'>
+                <h6>Anime : {{review.anime_title}}</h6>
+            </div>
+        </div>
+        <div id = 'review-content'>
+            <p>{{review.review_content}}</p>
+        </div>
+        <div id = 'icon'>
+            <p>{{review.nickname.nickname}}</p>
+            <p>{{review.post_date}}</p>
+            <p>Comment</p>
+            <p>いいね</p>
+        </div>
+    </section>
+    {% endfor %}
+</div>
+{% endblock content %}
