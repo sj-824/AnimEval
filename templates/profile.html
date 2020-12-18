@@ -8,7 +8,7 @@
     <section id = 'section1'>
 
         <div id = 'top'>
-            <h4>{{profile_list.nickname}}</h4>
+            <h4>{{profile.nickname}}</h4>
             <img src="#" alt="profile image">
         </div>
 
@@ -39,22 +39,35 @@
         <div id = 'list'>
             <div id = 'title'>
                 <h6 id = 'title_post'><a href="#">投稿一覧</a></h6>
-                <h6 id = 'title_question'><a href="#">質問一覧</a></h6>
                 <form class="form-inline my-2" method="GET" action="#" id = 'search_box'>
                     <input type = 'search' name = 'search' placeholder = 'キーワードを入力'>
                     <input type="submit" name = 'submit' value = '検索'>
                 </form>
             </div>
-
-            <div id = 'list'>
-                <div id = 'trend'>
-                    {% for item in article_list%}
-                    
-                    {% endfor %}
+            {% for review in review_list %}
+                <div id = 'review-list'>
+                    <div id = 'title1'>
+                        <div id = 'review-title'>
+                            <h4>{{review.evaluation_value_ave}}</h4>
+                            <h4>{{review.review_title}}</h4>
+                        </div>
+                        <div id = 'anime-title'>
+                            <h6>Anime : {{review.anime_title}}</h6>
+                        </div>
+                    </div>
+                        <div id = 'review-content'>
+                            <p>{{review.review_content}}</p>
+                        </div>
+                    <div id = 'icon'>
+                        <p>{{review.nickname.nickname}}</p>
+                        <p>{{review.post_date}}</p>
+                        <p>Comment</p>
+                        <p>いいね</p>
+                    </div>
                 </div>
-                <div id = 'list_question'>
-
-                </div>
+            {% endfor %}
+            <div id = 'context'>
+                <h2>{{ context }}</h2>
             </div>
         </div>
 
