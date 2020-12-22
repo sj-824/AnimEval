@@ -79,42 +79,56 @@ def home(request):
             if anime_genre[max_genre] == '1':
                 anime_list.append(animemodel.anime_title)
         #############ジャンルの一致したアニメを取得######################
-        print(anime_list)
         anime_list = AnimeModel.objects.filter(anime_title__in = anime_list)
-        print(anime_list)
         #############ジャンルの一致したアニメの平均評価の平均評価########################
         access_review_list = AccessReview.objects.filter(access_name = request.user).filter(review__anime_title__in = anime_list)
-        print(access_review_list)
-        if access_review_list.exists():
-            count = access_review_list.count()
-            access_values_sum = [0,0,0,0,0]
-            for access_review in access_review_list:
-                access_values = access_review.review.evaluation_value.split('/')
-                int_access_values = [int(n) for n in access_values]
-                access_values_sum = np.array(access_values_sum) + np.array(int_access_values)
-            access_values_ave = [n/count for n in access_values_sum]
-            ########################################
+        access_anime_title = []
+        for access_review in access_review_list:
+            if access_review.review.anime_title not in access_anime_title:
+                access_anime_title.append(access_review.review.anime_title)
+        for access_anime in access_anime_title:
+            review_match_list= ReviewModel.objects.filter(anime_title = access_anime)
+            review_values_sum = [0,0,0,0,0]
+            review_values_ave_sum = [0,0,0,0,0]
+            for review_match in review_match_list:
+                review_values = review_match.evaluation_value.split('/')
+                int_review_values = [int(n) for n in review_values]
+                review_values_sum = np.array(review_values_sum) + np.array(int_review_values)
+            review_values_ave = [n/review_match_list.count() for n in review_values_sum]
+            review_values_ave_sum = np.array(review_values_ave_sum) + np.array(review_values_ave)
+        review_values_ave_sum_ave = [n/len(access_anime_title) for n in review_values_ave_sum]
             ################各アニメの平均評価#########################
-            anime_dict = {}
-            for anime in anime_list:
-                anime_review_list = ReviewModel.objects.filter(anime_title = anime)
-                count = anime_review_list.count()
-                anime_values_sum = [0,0,0,0,0]
-                for review in anime_review_list:
-                    anime_values = review.evaluation_value.split('/')
-                    int_anime_values = [int(n) for n in anime_values]
-                    anime_values_sum = np.array(anime_values_sum) + np.array(int_anime_values)
-                anime_values_ave = [n/count for n in anime_values_sum]
-                anime_dict[anime.anime_title] = anime_values_ave
-            ##################Similarity#############################
-            anime_similarity = {}
-            for title, values in anime_dict.items():
-                value_sub = np.array(access_values_ave) - np.array(values)
-                value_sub_sqr = map(lambda x : x**2, value_sub)
-                anime_similarity[title] = math.sqrt(sum(value_sub_sqr))
-            anime_title = min(anime_similarity,key = anime_similarity.get)
-            high_similarity_anime = AnimeModel.objects.get(anime_title = anime_title)
-            return render(request,'home.html',{'review_list' : review_list, 'profile' : profile, 'high_similarity_anime' : high_similarity_anime})
+        anime_dict = {}
+        for anime in anime_list:
+            anime_review_list = ReviewModel.objects.filter(anime_title = anime)
+            count = anime_review_list.count()
+            anime_values_sum = [0,0,0,0,0]
+            for review in anime_review_list:
+                anime_values = review.evaluation_value.split('/')
+                int_anime_values = [int(n) for n in anime_values]
+                anime_values_sum = np.array(anime_values_sum) + np.array(int_anime_values)
+            anime_values_ave = [n/count for n in anime_values_sum]
+            anime_dict[anime.anime_title] = anime_values_ave
+        ##################Similarity#############################
+        anime_similarity = {}
+        for title, values in anime_dict.items():
+            value_sub = np.array(review_values_ave_sum_ave) - np.array(values)
+            value_sub_sqr = map(lambda x : x**2, value_sub)
+            anime_similarity[title] = math.sqrt(sum(value_sub_sqr))
+        anime_title = min(anime_similarity,key = anime_similarity.get)
+        high_similarity_anime = AnimeModel.objects.get(anime_title = anime_title)
+        str_genre = high_similarity_anime.anime_genre
+        top_anime_genre = genre_return(str_genre)
+        rank = anime_rank(high_similarity_anime.anime_title)
+        trend_anime_review = ReviewModel.objects.filter(anime_title = high_similarity_anime)
+        review_count = trend_anime_review.count()
+        return render(request,'home.html',{
+            'review_list' : review_list, 
+            'profile' : profile, 
+            'high_similarity_anime' : high_similarity_anime, 
+            'top_anime_genre' : top_anime_genre, 
+            'rank' : rank,
+            'review_count' : review_count})
     return render(request,'home.html',{'review_list' : review_list, 'profile' : profile})
 
 def profile(request,pk):
@@ -144,6 +158,11 @@ def create_review(request):
             object.username = request.user
             object.nickname = ProfileModel.objects.get(username = request.user)
             object.anime_title = AnimeModel.objects.get(anime_title = request.POST.get('anime_title'))
+            content_split = request.POST.get('review_content').splitlines()
+            object.review_title = content_split[0]
+            content_split.pop(0)
+            print(content_split)
+            object.review_content = '\r\n'.join(content_split)
             object.evaluation_value = request.POST.get('val1') + '/' + request.POST.get('val2') + '/' + request.POST.get('val3') + '/' + request.POST.get('val4') + '/' + request.POST.get('val5')
             object.evaluation_value_ave = (int(request.POST.get('val1')) + int(request.POST.get('val2')) + int(request.POST.get('val3')) + int(request.POST.get('val4')) + int(request.POST.get('val5')))/5
             object.save()
@@ -166,7 +185,10 @@ def create_review(request):
 def review_detail(request,pk):
     review = ReviewModel.objects.get(pk = pk)
     profile = ProfileModel.objects.get(username = request.user)
-    if review.username != request.user:
+    #####################AccessReview##########################
+    if review.username != request.user and not AccessReview.objects.filter(review = review).exists():
+        AccessReview.objects.create(access_name = request.user, review = review)
+    #####################AccessReview##########################
     #####################Counter###############################
         counter = Counter.objects.get(username = request.user)
         genre_counter = counter.genre_counter.split('/')
@@ -181,10 +203,7 @@ def review_detail(request,pk):
         counter.visited_review = review
         counter.save()
         #####################Counter###############################
-        #####################AccessReview##########################
-    if review.username != request.user:
-        AccessReview.objects.create(access_name = request.user, review = review)
-    #####################AccessReview##########################
+
     return render(request, 'review_detail.html', {'review' : review, 'profile' : profile})
 
 def setPlt(values1,values2,label1,label2):
@@ -284,14 +303,21 @@ def get_svg(request,pk):
         anime_list = AnimeModel.objects.filter(anime_title__in = anime_list)
         #############訪問したレビューの平均評価########################
         access_review_list = AccessReview.objects.filter(access_name = request.user).filter(review__anime_title__in = anime_list)
-        if access_review_list.exists():
-            count = access_review_list.count()
-            access_values_sum = [0,0,0,0,0]
-            for access_review in access_review_list:
-                access_values = access_review.review.evaluation_value.split('/')
-                int_access_values = [int(n) for n in access_values]
-                access_values_sum = np.array(access_values_sum) + np.array(int_access_values)
-            values2 = [n/count for n in access_values_sum]
+        access_anime_title = []
+        for access_review in access_review_list:
+            if access_review.review.anime_title not in access_anime_title:
+                access_anime_title.append(access_review.review.anime_title)
+        for access_anime in access_anime_title:
+            review_match_list= ReviewModel.objects.filter(anime_title = access_anime)
+            review_values_sum = [0,0,0,0,0]
+            review_values_ave_sum = [0,0,0,0,0]
+            for review_match in review_match_list:
+                review_values = review_match.evaluation_value.split('/')
+                int_review_values = [int(n) for n in review_values]
+                review_values_sum = np.array(review_values_sum) + np.array(int_review_values)
+            review_values_ave = [n/review_match_list.count() for n in review_values_sum]
+            review_values_ave_sum = np.array(review_values_ave_sum) + np.array(review_values_ave)
+        values2 = [n/len(access_anime_title) for n in review_values_ave_sum]
     label1 = 'Reviwer_ave'
     label2 = 'Access_ave'
     setPlt(values1,values2,label1,label2)
@@ -299,4 +325,41 @@ def get_svg(request,pk):
     plt.cla()
     response = HttpResponse(svg, content_type = 'image/svg+xml')
     return response
+
+def genre_return(str_genre):
+    genre_dict = {
+        1:'SF',
+        2:'ファンタジー',
+        3:'コメディ',
+        4:'バトル',
+        5:'恋愛',
+        6:'スポーツ',
+        7:'青春',
+        8:'戦争',
+    }
+    genre_list = str_genre.split('/')
+    genre_index = [index for index, genre in enumerate(genre_list) if genre == '1']
+    match_genre_list = [genre_dict[i+1] for i in genre_index]
+    return '/'.join(match_genre_list)
+
+def anime_rank(anime_title):
+    anime_rank = {}
+    anime_list = AnimeModel.objects.all()
+    for anime in anime_list:
+        review_list = ReviewModel.objects.filter(anime_title = anime)
+        review_eval_sum = 0
+        for review in review_list:
+            review_eval_ave = review.evaluation_value_ave
+            review_eval_sum += review_eval_ave
+        try:
+            anime_review_ave = review_eval_sum/review_list.count()
+            anime_rank[anime.anime_title] = anime_review_ave
+        except ZeroDivisionError:
+            break
+            
+        
+    anime_sort = sorted(anime_rank.items(), reverse=True, key = lambda x : x[1])
+    ranking = [anime_sort.index(item) for item in anime_sort if anime_title in item[0]]
+    return ranking[0] + 1
+    
 
