@@ -5,20 +5,49 @@
 <link rel="stylesheet" href="{% static '/css/home.css' %}">
 <div id = 'wrapper'>
     <section id = 'trend'>
+        <div id = 'trend-title'>
+            <h4>あなたへのおすすめアニメ</h4>
+            <p>Anime : {{high_similarity_anime.anime_title}}</p>
+            <p>Genre : {{top_anime_genre}}</p>
+        </div>
+        <div id = 'trend-title-detail'>
+            <ul id = 'trend-title-detail1'>
+                <li>
+                    <h6>総合順位</h6>
+                    <p>{{rank}}位</p>
+                </li>
+                <li>
+                    <h6>平均評価</h6>
+                    <p>3.8/5.0</p>
+                </li>
+                <li>
+                    <h6>投稿数</h6>
+                    <p>{{review_count}} 件</p>
+                </li>
+            </ul>
+        </div>
+        <div id = 'trend-graph'>
+            <img src="{% url 'trend_image' high_similarity_anime.pk %}" alt="" width = '400' height = '300'>
+        </div>
     </section>
     {% for review in review_list %}
     <section id = 'review-list'>
         <div id = 'title'>
+            <a href="{% url 'review_detail' review.pk %}">
             <div id = 'review-title'>
                 <h4>{{review.evaluation_value_ave}}</h4>
                 <h4>{{review.review_title}}</h4>
+                
             </div>
+            </a>
             <div id = 'anime-title'>
-                <h6>Anime : {{review.anime_title}}</h6>
+                <h6>Anime : {{review.anime_title.anime_title}}</h6>
+                <h6>Genre : {{review.anime_genre}}</h6>
             </div>
         </div>
         <div id = 'review-content'>
-            <p>{{review.review_content}}</p>
+            <p id = 'content'>{{review.review_content}}</p>
+            <p id = 'detail-btn'>続きを見る</p>
         </div>
         <div id = 'icon'>
             <p>{{review.nickname.nickname}}</p>
@@ -29,4 +58,5 @@
     </section>
     {% endfor %}
 </div>
+<script src = "{% static '/javascript/home.js' %}"></script>
 {% endblock content %}

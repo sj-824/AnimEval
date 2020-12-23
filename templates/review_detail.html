@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div id = 'wrapper'>
+    <section id = 'section1'>
+        <div id = 'review-hedder'>
+            <div id = 'review-title'>
+                <h4>{{review.review_title}}</h4>
+            </div>
+            <div id = 'anime-title'>
+                <p>Anime : {{review.anime_title.anime_title}}</p>
+                {% comment %} <p>{{review.anime_genre}}</p> {% endcomment %}
+                <p>Genre : {{review.get_anime_genre_display}}</p>
+            </div>
+        </div>
+        <div id = 'review-content'>
+            <p>{{review.review_content}}</p>
+        </div>
+    </section>
+    <section id = 'section2'>
+        <div id = 'evaluation-detail'>
+            <p>総合評価 : {{review.evaluation_value_ave}}</p>
+        </div>
+        <div id = 'evaluation-graph'>
+            <img src= {% url 'image' review.pk %} width = '600' height = '400'>
+        </div>
+    </section>
+</div>
+
+{% endblock content %}

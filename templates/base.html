@@ -1,3 +1,4 @@
+{% load static%}
 <!doctype html>
 <html lang="ja">
 <head>
@@ -8,6 +9,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"
           integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static '/css/all.css' %}">
 
     <title>AnimEval</title>
 </head>
@@ -24,15 +26,15 @@
           {% if user.is_authenticated %}
             <a class = 'nav-item nav-link text-dark' href = "{% url 'home' %}">Home</a>
             <a class = 'nav-item nav-link text-dark' href = "#">search</a>
-            <a class="nav-item nav-link text-dark" href="#">mypage</a>
-            <a class="nav-item nav-link text-dark" href="#">投稿</a>
+            <a class="nav-item nav-link text-dark" href="{% url 'profile' profile.id %}">mypage</a>
+            <a class="nav-item nav-link text-dark" href="{% url 'create_review' %}">投稿</a>
         <div class="d-flex justify-content-center">
           <form class="form-inline my-2" method="GET" action="#">
             <input type="text" class="form-control" name="q" value="{{request.GET.q}}">
             <button type="submit" value="search" class="btn btn-primary">検索</button>
           </form>
         </div>
-          <a class="nav-item nav-link text-dark" href="#">プロフィール</a>
+          <a class="nav-item nav-link text-dark" href="{% url 'profile' profile.id %}"></a>
       </div>
           {% if query %}
           <p class="text-center font-weight-bold h4">{{object_list.count}}件</p>

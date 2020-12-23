@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static '/css/home.css' %}">
 <link rel="stylesheet" href="{% static '/css/profile.css' %}">
 
 <div id = 'profile'>
@@ -15,16 +16,16 @@
         <div id = 'data'>
             <ul id = 'count'>
                 <li>
+                    <label for = 'name'>gender</label>
+                    <p>{{profile.get_gender_display}}</p>
+                </li>
+                <li>
+                    <label for = 'name'>お気に入りのアニメ</label>
+                    <p>{{profile.favarite_anime}}</p>
+                </li>
+                <li>
                     <label for = 'name'>投稿数</label>
-                    <p>17</p>
-                </li>
-                <li>
-                    <label for = 'name'>質問数</label>
-                    <p>17</p>
-                </li>
-                <li>
-                    <label for = 'name'>フォロワー</label>
-                    <p>17</p>
+                    <p>{{review_num}}</p>
                 </li>
             </ul>
             <div id = 'update'>
@@ -44,28 +45,30 @@
                     <input type="submit" name = 'submit' value = '検索'>
                 </form>
             </div>
-            {% for review in review_list %}
-                <div id = 'review-list'>
-                    <div id = 'title1'>
-                        <div id = 'review-title'>
-                            <h4>{{review.evaluation_value_ave}}</h4>
-                            <h4>{{review.review_title}}</h4>
+            <div id = 'review'>
+                {% for review in review_list %}
+                    <div id = 'review-list'>
+                        <div id = 'title1'>
+                            <div id = 'review-title'>
+                                <h4>{{review.evaluation_value_ave}}</h4>
+                                <h4>{{review.review_title}}</h4>
+                            </div>
+                            <div id = 'anime-title'>
+                                <h6>Anime : {{review.anime_title}}</h6>
+                            </div>
                         </div>
-                        <div id = 'anime-title'>
-                            <h6>Anime : {{review.anime_title}}</h6>
+                            <div id = 'review-content'>
+                                <p>{{review.review_content}}</p>
+                            </div>
+                        <div id = 'icon'>
+                            <p>{{review.nickname.nickname}}</p>
+                            <p>{{review.post_date}}</p>
+                            <p>Comment</p>
+                            <p>いいね</p>
                         </div>
                     </div>
-                        <div id = 'review-content'>
-                            <p>{{review.review_content}}</p>
-                        </div>
-                    <div id = 'icon'>
-                        <p>{{review.nickname.nickname}}</p>
-                        <p>{{review.post_date}}</p>
-                        <p>Comment</p>
-                        <p>いいね</p>
-                    </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
             <div id = 'context'>
                 <h2>{{ context }}</h2>
             </div>
