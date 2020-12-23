@@ -1,0 +1,91 @@
+
+#profile{
+    display: flex;
+}
+
+#section1{
+    width: 30%;
+}
+
+
+
+#top{
+    border: solid 1px black;
+    width: 200px;
+    height:150px;
+}
+
+#data{
+    border:red solid 1px;
+    position: relative;
+    width: 300px;
+    height: 350px;
+}
+#count{
+    border: solid 1px red;
+    width: 300px;
+    position: absolute;
+    padding: 0;
+}
+
+#count li {
+    list-style: inside;
+    background-color: #333;
+    color: white;
+    width: 300px;
+    height: 60px;
+    text-align: left;
+}
+
+#update{
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    transform: translate(-50%,0%);
+}
+
+#section2{
+    width: 70%;
+    border: rebeccapurple solid 1px;
+    position: relative;
+    height: 500px;
+}
+
+#title{
+    display: flex;
+    background-color: #333;
+    color: white;
+    position: relative;
+    height: 30px;
+}
+
+#search_box{
+    position:absolute;
+    right: 20px;
+    align-items: center;
+}
+
+#title_post{
+    margin-left: 20px;
+    background-color: red;
+    height: 30px;
+    align-items: center;
+}
+
+#context {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,0%);
+}
+
+.form-inline{
+    margin: 0;
+    padding: 0;
+    bottom: -8px;
+}
+
+#review{
+    height: 470px;
+    overflow: auto;
+}
