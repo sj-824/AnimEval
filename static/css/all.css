@@ -1,3 +1,4 @@
+
 nav{
     background: -webkit-linear-gradient(89deg, rgb(141, 241, 240), rgb(176, 246, 164));
     background: linear-gradient(90deg, rgb(141, 241, 240), rgb(176, 246, 164));
@@ -5,7 +6,8 @@ nav{
 }
 
 body{
-    background-color: rgba(223, 223, 223, 0.301);
+    background-color: rgba(0, 0, 0, 0.795);
+    color: aliceblue;
 }
 
 a{

@@ -1,12 +1,4 @@
 
-nav{
-    background: -webkit-linear-gradient(89deg, rgb(141, 241, 240), rgb(176, 246, 164));
-    background: linear-gradient(90deg, rgb(141, 241, 240), rgb(176, 246, 164));
-}
-
-body{
-    background-color: rgba(223, 223, 223, 0.301);
-}
 
 a{
     text-decoration: none;
@@ -50,7 +42,7 @@ a:hover{
 #trend-title-detail li{
     list-style-type: none;
     text-align: center;
-    background-color: rgb(236, 229, 229);
+    background-color: rgba(10, 2, 39, 0.795);
     width: 130px;
     height: 50px;
     margin: 0;

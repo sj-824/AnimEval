@@ -1,6 +1,7 @@
 
 #profile{
     display: flex;
+
 }
 
 #section1{
@@ -10,31 +11,46 @@
 
 
 #top{
-    border: solid 1px black;
+    position: relative;
     width: 200px;
     height:150px;
+    left: 195px;
+    transform: translate(-50%);
+    text-align: center;
 }
 
 #data{
-    border:red solid 1px;
+    border: solid 3px aliceblue;
     position: relative;
-    width: 300px;
+    width: 390px;
     height: 350px;
 }
 #count{
-    border: solid 1px red;
-    width: 300px;
+    width: 384px;
     position: absolute;
     padding: 0;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
 }
 
 #count li {
     list-style: inside;
-    background-color: #333;
-    color: white;
-    width: 300px;
-    height: 60px;
-    text-align: left;
+    list-style: none;
+    border: #f0f8ff;
+    overflow: hidden;
+    color:#f0f8ff;
+    width: 129px;
+    height: 120px;
+    margin: 2px;
+    text-align: center;
+}
+
+#count li p{
+    margin-bottom: 10px;
+    margin-top: 20px;
+    padding-bottom: 20px;
+    border-bottom: #f0f8ff solid 1px;
 }
 
 #update{
@@ -42,12 +58,17 @@
     top: 70%;
     left: 50%;
     transform: translate(-50%,0%);
+    border: aliceblue solid 1px;
+    width: 80%;
+    text-align: center;
+    background-color: rgb(24, 23, 23);
 }
 
 #section2{
-    width: 70%;
+    width: 60%;
     border: rebeccapurple solid 1px;
     position: relative;
+    left: 10%;
     height: 500px;
 }
 
