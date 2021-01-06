@@ -118,15 +118,57 @@ class ProfileModel(models.Model):
     nickname = models.CharField(max_length = 10,verbose_name = 'ニックネーム')
     gender = models.IntegerField(choices = GENDER_CHOICES, blank = True)
     favarite_anime = models.CharField(max_length = 100)
+    
+
+    def __str__(self):
+        return self.nickname
+
+class AnimeModel(models.Model):
+    anime_title = models.CharField(max_length = 100)
+    anime_genre = models.CharField(max_length = 15, default= '0/0/0/0/0/0/0/0')
 
 class ReviewModel(models.Model):
+
+    GENRE_CHOICES = (
+        (1,'SF'),
+        (2,'ファンタジー'),
+        (3,'コメディ'),
+        (4,'バトル'),
+        (5,'恋愛'),
+        (6,'スポーツ'),
+        (7,'青春'),
+        (8,'戦争'),
+    )
+
     username = models.ForeignKey(User, on_delete = models.CASCADE)
     nickname = models.ForeignKey(ProfileModel, on_delete = models.CASCADE)
-    anime_title = models.CharField(max_length = 100)
+    anime_title = models.ForeignKey(AnimeModel, on_delete = models.CASCADE)
+    anime_genre = models.IntegerField(choices = GENRE_CHOICES, blank = True)
     review_title = models.CharField(max_length =50)
     review_content = models.TextField()
     evaluation_value = models.CharField(max_length = 9)
-    evaluation_value_ave = models.PositiveIntegerField()
+    evaluation_value_ave = models.DecimalField(max_digits=2, decimal_places=1)
     post_date = models.DateTimeField(auto_now_add = True)
 
+class Counter(models.Model):
+    username = models.ForeignKey(User,on_delete=models.CASCADE)
+    genre_counter = models.CharField(max_length = 15, null = True)
 
+class AccessReview(models.Model):
+    access_name = models.ForeignKey(User, on_delete = models.CASCADE)
+    review = models.ForeignKey(ReviewModel, on_delete = models.CASCADE)
+
+    def __str__(self):
+        return 'アクセス名:{} / レビュータイトル:{}'.format(self.access_name.username, self.review.review_title)
+
+class Comment(models.Model):
+    comment = models.CharField(max_length = 255)
+    review = models.ForeignKey(ReviewModel, on_delete = models.CASCADE)
+    user = models.ForeignKey(User,on_delete = models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add = True)
+
+class ReplyComment(models.Model):
+    reply = models.CharField(max_length = 255)
+    comment = models.ForeignKey(Comment, on_delete = models.CASCADE)
+    user = models.ForeignKey(User,on_delete = models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add = True)
