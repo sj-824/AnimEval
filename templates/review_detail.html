@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
-
+{% load static %} 
 {% block content %}
+    <link rel="stylesheet" href="{% static '/css/all.css' %}">
+    <link rel="stylesheet" href="{% static '/css/detail.css' %}">
 
 <div id = 'wrapper'>
     <section id = 'section1'>
@@ -10,7 +12,6 @@
             </div>
             <div id = 'anime-title'>
                 <p>Anime : {{review.anime_title.anime_title}}</p>
-                {% comment %} <p>{{review.anime_genre}}</p> {% endcomment %}
                 <p>Genre : {{review.get_anime_genre_display}}</p>
             </div>
         </div>
@@ -25,7 +26,60 @@
         <div id = 'evaluation-graph'>
             <img src= {% url 'image' review.pk %} width = '600' height = '400'>
         </div>
+        <div id = 'comment-list'>
+            {% for comment in comment_list %}
+                <div id = 'comment-header'>
+                    <p>{{comment.user.username}}</p> 
+                    <p id = 'comment-date'>{{comment.created_at}}</p>
+                </div>
+                <div id = 'comment-content'>
+                    <p id = 'content'>{{comment.comment}}</p>
+                    <a href=""><p>続きを読む</p></a>
+                </div>
+                <div id = 'reply'>
+                    <a href="{% url 'create_reply' comment.pk %}"><p>返信</p></a>
+                </div>
+                <div>
+                    <a href="" id = 'reply-display'>返信を表示する</a>
+                    <div id = 'reply-list' style = 'display:none'>
+                        {% for reply in reply_list %}
+                            {% if reply.comment == comment %}
+                            <div id = 'reply-header'>
+                                <p>{{reply.user.username}}</p>
+                                <p id = 'reply-date'>{{reply.created_at}}</p>
+                            </div>
+                            <div id = 'reply-content'>
+                                <p id = 'content'>{{reply.reply}}</p>
+                                <a href=""><p>続きを読む</p></a>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+            <a href="{% url 'create_comment' review.pk %}">コメントを書く</a>
+        </div>
+    </section>
+    <section id = 'section3'>
+        <div id = 'random-review-header'>
+            <h4>{{review.username.username}}さんのその他の投稿</h4>
+        </div>
+        <div id = 'random-review-list'>
+            {% for review in review_list%}
+                <div id = 'random-review'>
+                    <div id = 'random-review-title'>
+                        <h6>{{review.evaluation_value_ave}} {{review.review_title}}</h6>
+                        <p>Anime : {{review.anime_title.anime_title}}</p>
+                    </div>
+                    <div id = 'random-review-content'>
+                        <p id = 'content'>{{review.review_content}}</p>
+                        <a href="{% url 'review_detail' review.pk %}"><p>続きを見る</p></a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     </section>
 </div>
+<script src = "{% static '/javascript/detail.js' %}"></script>
 
 {% endblock content %}

@@ -24,7 +24,21 @@ class CreateProfile(forms.ModelForm):
     class Meta:
         model = models.ProfileModel
         fields = ('nickname','gender','favarite_anime')
+        
+class CreateReview(forms.ModelForm):
+    class Meta:
+        model = models.ReviewModel
+        fields = ('anime_genre',)
 
+class CreateComment(forms.ModelForm):
+    class Meta:
+        model = models.Comment
+        fields = ('comment',)
+
+class CreateReply(forms.ModelForm):
+    class Meta:
+        model = models.ReplyComment
+        fields = ('reply',)
 
 
 

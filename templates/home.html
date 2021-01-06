@@ -2,8 +2,10 @@
 {% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static '/css/all.css' %}">
 <link rel="stylesheet" href="{% static '/css/home.css' %}">
 <div id = 'wrapper'>
+    {% if high_similarity_anime%}
     <section id = 'trend'>
         <div id = 'trend-title'>
             <h4>あなたへのおすすめアニメ</h4>
@@ -18,7 +20,7 @@
                 </li>
                 <li>
                     <h6>平均評価</h6>
-                    <p>3.8/5.0</p>
+                    <p>{{value_ave}}/5.0</p>
                 </li>
                 <li>
                     <h6>投稿数</h6>
@@ -30,6 +32,7 @@
             <img src="{% url 'trend_image' high_similarity_anime.pk %}" alt="" width = '400' height = '300'>
         </div>
     </section>
+    {% endif %}
     {% for review in review_list %}
     <section id = 'review-list'>
         <div id = 'title'>
@@ -46,7 +49,7 @@
             </div>
         </div>
         <div id = 'review-content'>
-            <p id = 'content'>{{review.review_content}}</p>
+            <p id = 'content'>{{review.review_content | linebreaksbr}}</p>
             <p id = 'detail-btn'>続きを見る</p>
         </div>
         <div id = 'icon'>

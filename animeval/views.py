@@ -4,8 +4,8 @@ from django.views import generic
 from django.contrib.auth import login, authenticate, get_user_model, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import (LoginView, LogoutView)
-from .forms import LoginForm, UserCreateForm, CreateProfile, CreateReview
-from .models import User, ProfileModel, ReviewModel, Counter, AnimeModel, AccessReview
+from .forms import LoginForm, UserCreateForm, CreateProfile, CreateReview, CreateComment, CreateReply
+from .models import User, ProfileModel, ReviewModel, Counter, AnimeModel, AccessReview, Comment, ReplyComment
 from bs4 import BeautifulSoup as bs4
 import requests
 import matplotlib.pyplot as plt
@@ -122,13 +122,19 @@ def home(request):
         rank = anime_rank(high_similarity_anime.anime_title)
         trend_anime_review = ReviewModel.objects.filter(anime_title = high_similarity_anime)
         review_count = trend_anime_review.count()
+
+        ############high_similarity_animeの平均値を取得############
+        # anime_dictから対象のアニメの評価値を取得
+        value_ave_item = anime_dict[high_similarity_anime.anime_title]
+        value_ave = f'{sum(value_ave_item)/len(value_ave_item):.1f}'
         return render(request,'home.html',{
             'review_list' : review_list, 
             'profile' : profile, 
             'high_similarity_anime' : high_similarity_anime, 
             'top_anime_genre' : top_anime_genre, 
             'rank' : rank,
-            'review_count' : review_count})
+            'review_count' : review_count,
+            'value_ave' : value_ave})
     return render(request,'home.html',{'review_list' : review_list, 'profile' : profile})
 
 def profile(request,pk):
@@ -142,16 +148,22 @@ def profile(request,pk):
         return render(request, 'profile.html',{'profile' : profile, 'context' : context})
 
 def create_review(request):
+    profile = ProfileModel.objects.get(username = request.user)
     if 'search' in request.POST:
         anime_title = request.POST.get('anime_title')
         try:
             anime = AnimeModel.objects.get(anime_title = anime_title)
-            return render(request,'create_review.html',{'anime_title' : anime_title})
+            return render(request,'create_review.html',{'anime_title' : anime_title, 'profile' : profile})
         except AnimeModel.DoesNotExist:
             AnimeModel.objects.create(anime_title = anime_title)
             context = 'そのアニメに関する投稿はまだないため、入力してください'
-            return render(request, 'create_review.html', {'anime_title' : anime_title,'context' : context})
+            return render(request, 'create_review.html', {'anime_title' : anime_title,'context' : context, 'profile' : profile})
     if 'post' in request.POST:
+        anime = request.POST.get('anime_title')
+        past_post = ReviewModel.objects.filter(username = request.user).filter(anime_title__anime_title = anime)
+        if past_post.exists():
+            context = '過去にこのアニメについて投稿しています'
+            return render(request, 'create_review.html', {'context' : context, 'profile' : profile})
         form = CreateReview(request.POST)
         if form.is_valid():
             object = form.save(commit = False)
@@ -161,7 +173,8 @@ def create_review(request):
             content_split = request.POST.get('review_content').splitlines()
             object.review_title = content_split[0]
             content_split.pop(0)
-            print(content_split)
+            if request.POST.get('spoiler') == '1':
+                content_split.insert(0,'※ネタバレを含む')
             object.review_content = '\r\n'.join(content_split)
             object.evaluation_value = request.POST.get('val1') + '/' + request.POST.get('val2') + '/' + request.POST.get('val3') + '/' + request.POST.get('val4') + '/' + request.POST.get('val5')
             object.evaluation_value_ave = (int(request.POST.get('val1')) + int(request.POST.get('val2')) + int(request.POST.get('val3')) + int(request.POST.get('val4')) + int(request.POST.get('val5')))/5
@@ -180,7 +193,7 @@ def create_review(request):
             return redirect('home')
     else:
         form = CreateReview
-    return render(request,'create_review.html',{'form' : form})
+    return render(request,'create_review.html',{'form' : form, 'profile' : profile})
 
 def review_detail(request,pk):
     review = ReviewModel.objects.get(pk = pk)
@@ -203,8 +216,43 @@ def review_detail(request,pk):
         counter.visited_review = review
         counter.save()
         #####################Counter###############################
+    #####################review_list###########################
+    review_list = ReviewModel.objects.filter(username = review.username).order_by('?')[:3]
+    #################comment_list########################
+    comment_list = Comment.objects.filter(review__id = pk).order_by('-created_at')
+    reply_list = ReplyComment.objects.filter(comment__review__id = pk).order_by('created_at')
+    return render(request, 'review_detail.html', {
+        'review' : review,
+        'profile' : profile,
+        'review_list' : review_list,
+        'comment_list' : comment_list,
+        'reply_list' : reply_list})
 
-    return render(request, 'review_detail.html', {'review' : review, 'profile' : profile})
+def create_comment(request,pk):
+    profile = ProfileModel.objects.get(username = request.user)
+    if request.method == 'POST':
+        form = CreateComment(request.POST)
+        if form.is_valid():
+            object = form.save(commit = False)
+            object.user = request.user
+            object.review = ReviewModel.objects.get(pk = pk)
+            object.save()
+            return redirect('review_detail', pk = pk)
+    else:
+        return render(request, 'create_comment.html', {'profile' : profile})
+
+def create_reply(request,pk):
+    profile = ProfileModel.objects.get(username = request.user)
+    if request.method == 'POST':
+        form = CreateReply(request.POST)
+        if form.is_valid():
+            object = form.save(commit = False)
+            object.user = request.user
+            object.comment = Comment.objects.get (pk = pk)
+            object.save()
+            return redirect('review_detail', pk = object.comment.review.pk)
+    else:
+        return render(request, 'create_reply.html', {'profile' : profile})
 
 def setPlt(values1,values2,label1,label2):
 #######各要素の設定#########
@@ -215,7 +263,8 @@ def setPlt(values1,values2,label1,label2):
     rader_values2 = np.concatenate([values2, [values2[0]]])
 
 #######グラフ作成##########
-    fig = plt.figure (facecolor = 'w')
+    fig = plt.figure(facecolor='k')
+    fig.patch.set_alpha(0)
     ax = fig.add_subplot(1,1,1,polar = True)
     ax.plot(angles, rader_values1, color = 'r', label = label1)
     ax.plot(angles, rader_values2, color = 'b', label = label2)
@@ -227,7 +276,7 @@ def setPlt(values1,values2,label1,label2):
         rader_value4 = [n*z for n in rader_values2]
         ax.fill(angles, rader_value3, alpha = 0.5, facecolor = cm(z))
         ax.fill(angles, rader_value4, alpha = 0.5, facecolor = cm2(z))
-    ax.set_thetagrids(angles[:-1]*180/np.pi,labels,fontname = 'Source Han Code JP')
+    ax.set_thetagrids(angles[:-1]*180/np.pi,labels,fontname = 'Source Han Code JP',color = 'snow', fontweight = 'bold')
     ax.set_rgrids([])
     ax.spines['polar'].set_visible(False)
     ax.set_theta_zero_location('N')
@@ -237,17 +286,17 @@ def setPlt(values1,values2,label1,label2):
 
     for grid_value in rgrids:
         grid_values = [grid_value] * (len(labels) + 1)
-        ax.plot(angles, grid_values, color = 'gray', linewidth = 0.5)
+        ax.plot(angles, grid_values, color = 'snow', linewidth = 0.5,)
     
     for t in rgrids:
-        ax.text(x = 0,y = t, s = t)
+        ax.text(x = 0,y = t, s = t,color = 'snow')
 
     ax.set_rlim([min(rgrids), max(rgrids)])
-    ax.set_title ('評価', fontname = 'Source Han Code JP', pad = 20)
+    ax.set_title ('評価', fontname = 'Source Han Code JP', pad = 20, color = 'snow')
     ax.set_axisbelow(True)
 def get_image():
     buf = io.BytesIO()
-    plt.savefig(buf,format = 'svg',bbox_inches = 'tight')
+    plt.savefig(buf,format = 'svg',bbox_inches = 'tight',facecolor = 'dimgrey' , transparent = True)
     graph = buf.getvalue()
     buf.close()
     return graph
@@ -362,4 +411,3 @@ def anime_rank(anime_title):
     ranking = [anime_sort.index(item) for item in anime_sort if anime_title in item[0]]
     return ranking[0] + 1
     
-
